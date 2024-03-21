@@ -1,0 +1,2003 @@
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections;
+using OpenQA.Selenium;
+using AgentCore.Components.Web.Core.Entities;
+using AgentCore.Components.Global.Screen;
+using WindowsInput.Native;
+using AgentCore.Components;
+using AgentCore.Entity;
+using AgentCore.Util;
+using System;
+using System.Data;
+using System.Linq;
+using System.Globalization;
+var codigoItem = Variable("codigoItem");
+string cnpj;
+string valorServico;
+string notaFiscal;
+string dataDoc;
+string cpfCnpj;
+string nomeCpf;
+string codigoRetorno = $@"RPA000";
+string mensagemRetorno = $@"Processo Incompleto.";
+string statusRetorno = $@"#()";
+string nomeRotina = $@"1 - Global";
+string diretorioHist = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Histórico";
+string nomeArquivoHist = $@"Historico";
+string diretorioExcel = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Excel";
+string nomeExcel = $@"NFSe_E_41339061_20230701_20230707";
+string cpnjlinha;
+string cnpjHistorico;
+bool pesquisado;
+string dataHoje = $@"{DateTime.Now.ToString("ddMMyyyy")}";
+InputTable criarTabelaHistorico;
+Grid criarGridHistorico;
+Grid criarGridRastreabilidade;
+Grid criarGridCnpjs;
+Excel abrirExcel;
+int count;
+WebAutomation abrirNavegador;
+bool verificarBotaoEntrar;
+WebAutomationFindElement escreverCampoEmail;
+WebAutomationFindElement escreverCampoSenha;
+WebAutomationFindElement clicarBotaoEntrar;
+WebAutomationCaptcha resolverCaptcha;
+WebAutomationFindElement clicarBotaoAbrirNavegador;
+bool processoLaco;
+InputTable lerDadosExcel;
+int countDados;
+WaitImageFromScreen aguardarSegundoModelo1;
+WaitImageFromScreen aguardarSegundoModelo2;
+WaitImageFromScreen aguardarPrimeiroModelo1;
+WaitImageFromScreen aguardarPrimeiroModelo2;
+WaitImageFromScreen aguardarSelecionarBase1;
+WaitImageFromScreen aguardarSelecionarBase2;
+WaitImageFromScreen aguardarLogin1;
+WaitImageFromScreen aguardarLogin2;
+WaitImageFromScreen aguardarLogin3;
+WaitImageFromScreen aguardarLupa1;
+WaitImageFromScreen aguardarLupa2;
+WaitImageFromScreen aguardarValidacaoPn2;
+WaitImageFromScreen aguardarEscrituracao1;
+WaitImageFromScreen aguardarEscrituracao2;
+WaitImageFromScreen aguardarEscrituracao3;
+WaitImageFromScreen aguardarEscrituracao4;
+WaitImageFromScreen aguardarEscrituracao5;
+WaitImageFromScreen aguardarEscrituracao6;
+WaitImageFromScreen aguardarEscrituracao7;
+WaitImageFromScreen aguardarEscrituracao8;
+WaitImageFromScreen aguardarEscrituracao9;
+WaitImageFromScreen aguardarEscrituracao10;
+WaitImageFromScreen aguardarEscrituracao11;
+WaitImageFromScreen aguardarEscrituracao12;
+WaitImageFromScreen aguardarEscrituracao14;
+WaitImageFromScreen aguardarPrevencaoErros1;
+WaitImageFromScreen aguardarNovoPn1;
+WaitImageFromScreen aguardarNovoPn2;
+WaitImageFromScreen aguardarNovoPn3;
+WaitImageFromScreen aguardarNovoPn4;
+WaitImageFromScreen aguardarNovoPn5;
+WaitImageFromScreen aguardarCpf1;
+WaitImageFromScreen aguardarCpf2;
+WaitImageFromScreen aguardarCpf3;
+WaitImageFromScreen aguardarCpf4;
+WaitImageFromScreen aguardarCpf5;
+WaitImageFromScreen aguardarCpf6;
+WaitImageFromScreen aguardarCpf7;
+WaitImageFromScreen aguardarCpf9;
+Excel abrirExcelHistorico;
+InputTable lerDadosExcelHistorico;
+int countHist;
+ResponseDto result = Response();
+Start();
+return result;
+
+public void Start() {
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina", "global"); } catch { }
+    global();
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina", "rotinaPrincipal"); } catch { }
+    rotinaPrincipal();
+    try { ExecuteCode.SetCurrentObject("Exportar Tabela Histórico", "criarTabelaHistorico"); } catch { }
+    criarTabelaHistorico.Label = "Exportar Tabela Histórico";
+    criarTabelaHistorico.Target = EnumDatatableFormat.Excel;
+    criarTabelaHistorico.OutputPath = $@"{diretorioHist}";
+    criarTabelaHistorico.FileName = $@"{nomeArquivoHist}_{dataHoje}";
+    criarTabelaHistorico.Export();
+}
+
+public void global() {
+    try { ExecuteCode.SetCurrentObject("Criar Tabela de Histórico", "criarTabelaHistorico"); } catch { }
+    criarTabelaHistorico = new InputTable()
+    {
+        Name = "criarTabelaHistorico",
+        Label = "Criar Tabela de Histórico",
+        Columns = new Dictionary<string, Type>(){
+            {$"CNPJ", typeof(string)},
+        },
+        NameTab = $"Histórico"
+    }.Create();
+    try { ExecuteCode.SetCurrentObject("Converte Tabela de Dados em Grid - Historico", "criarGridHistorico"); } catch { }
+    criarGridHistorico = new Grid() {
+        Name = "criarGridHistorico",
+        Label = "Converte Tabela de Dados em Grid - Historico",
+        NameGrid = $"criarGridHistorico",
+        Title = $"Histórico SAP ClickSign ",
+        Spot = $"GLOBAL",
+        Clearable = true,
+        Editable = false,
+        Labels = criarTabelaHistorico.GetColumns().ColumnsName,
+        IdExecution = IdExecution
+    }.CreateFromInputTable(criarTabelaHistorico);
+    try { ExecuteCode.SetCurrentObject("Criar Grid de Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade = new Grid() {
+        Name = "criarGridRastreabilidade",
+        Label = "Criar Grid de Rastreabilidade",
+        NameGrid = $"criarGridRastreabilidade",
+        Title = $"Rastreabilidade SAP - Indaiatuba",
+        Spot = $"GLOBAL",
+        Clearable = true,
+        Editable = false,
+        Labels = new string[]{$"Status", $"Mensagem", $"Rotina"},
+        IdExecution = IdExecution
+    }.Run();
+    try { ExecuteCode.SetCurrentObject("Criar Grid - Processo de Cnpjs", "criarGridCnpjs"); } catch { }
+    criarGridCnpjs = new Grid() {
+        Name = "criarGridCnpjs",
+        Label = "Criar Grid - Processo de Cnpjs",
+        NameGrid = $"criarGridCnpjs",
+        Title = $"Processo Cnpj SAP Indaiatuba",
+        Spot = $"GLOBAL",
+        Clearable = true,
+        Editable = false,
+        Labels = new string[]{$"Status", $"CNPJ", $"Valor"},
+        IdExecution = IdExecution
+    }.Run();
+    try { ExecuteCode.SetCurrentObject("Abrir Excel Base Nfse", "abrirExcel"); } catch { }
+    abrirExcel = new Excel()
+    {
+        Name = "abrirExcel",
+        Label = "Abrir Excel Base Nfse",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Excel\NFSe_E_41339061_20230701_20230707.xlsx",
+        Password = $"",
+        BackgroundProcess = false,
+        ReadOnOpen = false,
+    }.Open();
+}
+
+public void rotinaPrincipal() {
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Abrir Navegador", "abrirNavegadorSap"); } catch { }
+        abrirNavegadorSap();
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina", "escrituracaoDeNotas1"); } catch { }
+        escrituracaoDeNotas1();
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+    }
+}
+
+public void abrirNavegadorSap() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3 - Abrir Navegador";
+    try { ExecuteCode.SetCurrentObject("Laço Livre - Abrir Navegador", "lacoAbrirNavegador"); } catch { }
+    count = 0;
+    while (count < 3)
+    {
+        try {
+            try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Abrir Navegador", "abrirNavegador"); } catch { }
+    abrirNavegador = new WebAutomation()
+    {
+        Name = "abrirNavegador",
+        Label = "Abrir Navegador",
+        CheckProcess = false,
+        NoCaptchaAiExtension = "https://ide-download-public.s3.sa-east-1.amazonaws.com/BrowserExtensions/NoCaptchaAIMOD.crx",
+        Arguments = new List<string> { $"ignore-certificate-errors" },
+        Browser = WebBrowser.Chrome,
+        Url = $@"https://us.autosky.cloud/",
+        AnonymousGuide = true,
+        MobileMode = false,
+        Timeout = 60,
+        MultiplesDownload = false,
+        PageLoadStrategy = PageLoadStrategy.None,
+        VerifyLink = true,
+        DirDownload = $@"C:\OD\OneDrive - ALBIERI E ASSOCIADOS CONSULTORIA EMPRESARIAL LTDA\Área de Trabalho\Dev\Prefeitura de Indaiatuba\TXT",
+        DevTools = false,
+    };
+    abrirNavegador.Run();
+    abrirNavegador.Response(out result);
+    try { ExecuteCode.SetCurrentObject("Verificar se Existe - Botão Entrar", "verificarBotaoEntrar"); } catch { }
+    verificarBotaoEntrar = new WebAutomationFindElement(abrirNavegador) {
+        Name = "verificarBotaoEntrar",
+        Label = "Verificar se Existe - Botão Entrar",
+        Xpath = $"//*[@id='root']/div/div/div[3]/div[1]/div[1]/form/div/div[5]/button",
+        Timeout = 15,
+        FindType = FindType.ONE,
+        WebElementSearchType = WebElementSearchType.XPath
+    }.Run().Exists;
+            try { ExecuteCode.SetCurrentObject("Condição If - Verificar se Existe", ""); } catch { }
+            if (verificarBotaoEntrar) {
+    try { ExecuteCode.SetCurrentObject("Buscar Elementos - Escrever Campo Email", "escreverCampoEmail"); } catch { }
+    escreverCampoEmail = new WebAutomationFindElement(abrirNavegador) {
+        Name = "escreverCampoEmail",
+        Label = "Buscar Elementos - Escrever Campo Email",
+        Xpath = $"//*[@id='root']/div/div/div[3]/div[1]/div[1]/form/div/div[1]/div/div/input",
+        MinReturns = 1,
+        FindType = FindType.ONE,
+        Timeout = 60,
+        IsPassword = false,
+        WebElementSearchType = WebElementSearchType.XPath
+    }.Run();
+    escreverCampoEmail.Type($"joao.santos@aaconsulting.com.br", 0);
+    try { ExecuteCode.SetCurrentObject("Buscar Elementos - Escrever Campo Senha", "escreverCampoSenha"); } catch { }
+    escreverCampoSenha = new WebAutomationFindElement(abrirNavegador) {
+        Name = "escreverCampoSenha",
+        Label = "Buscar Elementos - Escrever Campo Senha",
+        Xpath = $"//*[@id='root']/div/div/div[3]/div[1]/div[1]/form/div/div[2]/div/div/input",
+        MinReturns = 1,
+        FindType = FindType.ONE,
+        Timeout = 60,
+        IsPassword = false,
+        WebElementSearchType = WebElementSearchType.XPath
+    }.Run();
+    escreverCampoSenha.Type($"17072003@Joao", 0);
+    try { ExecuteCode.SetCurrentObject("Buscar Elementos - Clicar Botão Entrar", "clicarBotaoEntrar"); } catch { }
+    clicarBotaoEntrar = new WebAutomationFindElement(abrirNavegador) {
+        Name = "clicarBotaoEntrar",
+        Label = "Buscar Elementos - Clicar Botão Entrar",
+        Xpath = $"//*[@id='root']/div/div/div[3]/div[1]/div[1]/form/div/div[5]/button",
+        MinReturns = 1,
+        FindType = FindType.ONE,
+        Timeout = 60,
+        IsPassword = false,
+        WebElementSearchType = WebElementSearchType.XPath
+    }.Run();
+    clicarBotaoEntrar.Click(0);
+                try { ExecuteCode.SetCurrentObject("Resolver Captcha - Login", "resolverCaptcha"); } catch { }
+                resolverCaptcha = new WebAutomationCaptcha(abrirNavegador) {
+                    Name = "resolverCaptcha",
+                    Label = "Resolver Captcha - Login",
+                    ProviderCaptcha = ProviderCaptcha.TWO_CAPTCHA,
+                    TypeCaptcha = TypeCaptcha.RECAPTCHA_V2,
+                    Timeout = 120,
+                    Sync = true
+                }
+                .Run();
+                resolverCaptcha.InsertTokenCallBack(abrirNavegador);
+                try { ExecuteCode.SetCurrentObject("Buscar Elementos - Clicar Botão Abrir no Navegador", "clicarBotaoAbrirNavegador"); } catch { }
+                clicarBotaoAbrirNavegador = new WebAutomationFindElement(abrirNavegador) {
+                    Name = "clicarBotaoAbrirNavegador",
+                    Label = "Buscar Elementos - Clicar Botão Abrir no Navegador",
+                    Xpath = $"//*[@id='root']/div/div/div/div[2]/div/div/div/div/div[3]/div/div/div/button/span[1]/div",
+                    MinReturns = 1,
+                    FindType = FindType.ONE,
+                    Timeout = 60,
+                    IsPassword = false,
+                    WebElementSearchType = WebElementSearchType.XPath
+                }.Run();
+                clicarBotaoAbrirNavegador.Click(0);
+    try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA001";
+    try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Site SAP B1 acessado";
+    try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#(true)";
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+            }
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA002";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Site não carregado";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(false)";
+            try { ExecuteCode.SetCurrentObject("Fechar Navegador", "abrirNavegador");
+      abrirNavegador.Quit();
+    } catch { }
+        }
+        catch (Exception ex) {
+            try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA002";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(false)";
+        }
+        finally {
+            try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+            try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+            criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+            criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+        }
+        count = count + 1;
+    }
+}
+
+public void alimentarTabelaExcel() {
+    try { ExecuteCode.SetCurrentObject("Ler Dados Excel", "abrirExcel"); } catch { }
+    abrirExcel.Label = "Ler Dados Excel";
+    abrirExcel.ReadReturnType = EnumReturnType.InputTable;
+    lerDadosExcel = abrirExcel.ReadExcelRange(1, $@"A", 1005, $@"", true, false, ExcelReadEmptyRow.Skip).Result;
+    try { ExecuteCode.SetCurrentObject("Varrer Dados Excel", "varrerDadosExcel"); } catch { }
+    count = 0;
+    foreach (DataRow varrerDadosExcel in InputTable.GetEnumerable((DataTable)lerDadosExcel.Result))
+    {
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "cnpj"); } catch { }
+        cnpj = $@"{varrerDadosExcel[34]}";
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "valorServico"); } catch { }
+        valorServico = $@"{varrerDadosExcel[26]}";
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "notaFiscal"); } catch { }
+        notaFiscal = $@"{varrerDadosExcel[1]}";
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "dataDoc"); } catch { }
+        dataDoc = $@"{varrerDadosExcel[7]}";
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "processoLaco"); } catch { }
+        processoLaco = false;
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "cpfCnpj"); } catch { }
+        cpfCnpj = $@"{varrerDadosExcel[33]}";
+        try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Dados Excel", "nomeCpf"); } catch { }
+        nomeCpf = $@"{varrerDadosExcel[37]}";
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Ler Histórico", "lerHistorico"); } catch { }
+        lerHistorico();
+    try { ExecuteCode.SetCurrentObject("Condição If - Validar Histórico", ""); } catch { }
+    if (pesquisado) {
+    // -- Errors found at component grid_add_data
+    }
+    else {
+    try { ExecuteCode.SetCurrentObject("Laço Livre - Adicionar Escrituração no SAP", "lacoEscrituracaoNotas"); } catch { }
+    countDados = 0;
+    while (true)
+    {
+    try { ExecuteCode.SetCurrentObject("Condição If - Se for CPF ", ""); } catch { }
+    if (varrerDadosExcel[33].ToString().Trim() == "1") {
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina - Adicionar NF de CPF", "adicionarNfCpf"); } catch { }
+    adicionarNfCpf();
+    }
+    else {
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina", "escrituracaoNotas2"); } catch { }
+    escrituracaoNotas2();
+    }
+    try { ExecuteCode.SetCurrentObject("Condição If", ""); } catch { }
+    if (processoLaco == true) {
+    try { ExecuteCode.SetCurrentObject("Sair do Laço", ""); } catch { }
+    break;
+    }
+        countDados = countDados + 1;
+    }
+    }
+        count = count + 1;
+    }
+}
+
+public void escrituracaoDeNotas1() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3.2 - Escrituração de Notas (1)";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Segundo Modelo (Change Company)", "aguardarSegundoModelo1"); } catch { }
+        aguardarSegundoModelo1 = new WaitImageFromScreen(){
+            Name = "aguardarSegundoModelo1",
+            Label = "Aguardar Imagem - Segundo Modelo (Change Company)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\Modelo 2\Um.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 30
+        }.Run();
+        aguardarSegundoModelo1.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Condição If", ""); } catch { }
+        if (aguardarSegundoModelo1.RectImage.Width * aguardarSegundoModelo1.RectImage.Height != 0) {
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Segundo Modelo", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Segundo Modelo",
+        X = aguardarSegundoModelo1.RectImage.X,
+        Y = aguardarSegundoModelo1.RectImage.Y,
+        ImageWidth = aguardarSegundoModelo1.RectImage.Width,
+        ImageHeight = aguardarSegundoModelo1.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+            try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Segundo Modelo (ClickSign)", "aguardarSegundoModelo2"); } catch { }
+            aguardarSegundoModelo2 = new WaitImageFromScreen(){
+                Name = "aguardarSegundoModelo2",
+                Label = "Aguardar Imagem - Segundo Modelo (ClickSign)",
+                Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\Selecionar Base\Um.png",
+                TypeWaitImage = TypeWaitImage.Path,
+                SaveScreenshot = false,
+                PathToSaveScreenshot = $@"",
+                CreateDirectory = true,
+                Time = 60
+            }.Run();
+            aguardarSegundoModelo2.Response(out result);
+            if (false && result.code != "RPA001")
+            {
+                return;
+            }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Segundo Modelo", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Segundo Modelo",
+        X = aguardarSegundoModelo2.RectImage.X,
+        Y = aguardarSegundoModelo2.RectImage.Y,
+        ImageWidth = aguardarSegundoModelo2.RectImage.Width,
+        ImageHeight = aguardarSegundoModelo2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = true
+    }. Run();
+        }
+    else {
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Primeiro Modelo (Change Company)", "aguardarPrimeiroModelo1"); } catch { }
+    aguardarPrimeiroModelo1 = new WaitImageFromScreen(){
+        Name = "aguardarPrimeiroModelo1",
+        Label = "Aguardar Imagem - Primeiro Modelo (Change Company)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\Modelo 1\Um.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarPrimeiroModelo1.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Primeiro Modelo", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Primeiro Modelo",
+        X = aguardarPrimeiroModelo1.RectImage.X,
+        Y = aguardarPrimeiroModelo1.RectImage.Y,
+        ImageWidth = aguardarPrimeiroModelo1.RectImage.Width,
+        ImageHeight = aguardarPrimeiroModelo1.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Dois (Ok)", "aguardarPrimeiroModelo2"); } catch { }
+    aguardarPrimeiroModelo2 = new WaitImageFromScreen(){
+        Name = "aguardarPrimeiroModelo2",
+        Label = "Aguardar Imagem - Dois (Ok)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\Modelo 1\Dois.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarPrimeiroModelo2.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dois",
+        X = aguardarPrimeiroModelo2.RectImage.X,
+        Y = aguardarPrimeiroModelo2.RectImage.Y,
+        ImageWidth = aguardarPrimeiroModelo2.RectImage.Width,
+        ImageHeight = aguardarPrimeiroModelo2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    }
+        AgentCore.Components.Sleep.Wait(25000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Selecionar Base (Um)", "aguardarSelecionarBase1"); } catch { }
+        aguardarSelecionarBase1 = new WaitImageFromScreen(){
+            Name = "aguardarSelecionarBase1",
+            Label = "Aguardar Imagem - Selecionar Base (Um)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\Selecionar Base\Um.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarSelecionarBase1.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Um ", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Um ",
+            X = aguardarSelecionarBase1.RectImage.X,
+            Y = aguardarSelecionarBase1.RectImage.Y,
+            ImageWidth = aguardarSelecionarBase1.RectImage.Width,
+            ImageHeight = aguardarSelecionarBase1.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Selecionar Base (Dois)", "aguardarSelecionarBase2"); } catch { }
+        aguardarSelecionarBase2 = new WaitImageFromScreen(){
+            Name = "aguardarSelecionarBase2",
+            Label = "Aguardar Imagem - Selecionar Base (Dois)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\Selecionar Base\Dois.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarSelecionarBase2.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Dois",
+            X = aguardarSelecionarBase2.RectImage.X,
+            Y = aguardarSelecionarBase2.RectImage.Y,
+            ImageWidth = aguardarSelecionarBase2.RectImage.Width,
+            ImageHeight = aguardarSelecionarBase2.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(2000);
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Login Um (Módulos)", "aguardarLogin1"); } catch { }
+    aguardarLogin1 = new WaitImageFromScreen(){
+        Name = "aguardarLogin1",
+        Label = "Aguardar Imagem - Login Um (Módulos)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\NF De Saída\Um.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarLogin1.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Um", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Um",
+        X = aguardarLogin1.RectImage.X,
+        Y = aguardarLogin1.RectImage.Y,
+        ImageWidth = aguardarLogin1.RectImage.Width,
+        ImageHeight = aguardarLogin1.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Login Dois (Vendas C/R)", "aguardarLogin2"); } catch { }
+    aguardarLogin2 = new WaitImageFromScreen(){
+        Name = "aguardarLogin2",
+        Label = "Aguardar Imagem - Login Dois (Vendas C/R)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\NF De Saída\Dois.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarLogin2.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dois",
+        X = aguardarLogin2.RectImage.X,
+        Y = aguardarLogin2.RectImage.Y,
+        ImageWidth = aguardarLogin2.RectImage.Width,
+        ImageHeight = aguardarLogin2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Login Três (Nota Fiscal de Saída)", "aguardarLogin3"); } catch { }
+    aguardarLogin3 = new WaitImageFromScreen(){
+        Name = "aguardarLogin3",
+        Label = "Aguardar Imagem - Login Três (Nota Fiscal de Saída)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Login\NF De Saída\Tres.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarLogin3.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Três", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Três",
+        X = aguardarLogin3.RectImage.X,
+        Y = aguardarLogin3.RectImage.Y,
+        ImageWidth = aguardarLogin3.RectImage.Width,
+        ImageHeight = aguardarLogin3.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina", "alimentarTabelaExcel"); } catch { }
+    alimentarTabelaExcel();
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void escrituracaoNotas2() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3.2.1 - Escrituração de Notas (2)";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Lupa Um (Lupa)", "aguardarLupa1"); } catch { }
+    aguardarLupa1 = new WaitImageFromScreen(){
+        Name = "aguardarLupa1",
+        Label = "Aguardar Imagem - Lupa Um (Lupa)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Lupa e Cnpj\Um.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarLupa1.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Um", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Um",
+        X = aguardarLupa1.RectImage.X,
+        Y = aguardarLupa1.RectImage.Y,
+        ImageWidth = aguardarLupa1.RectImage.Width,
+        ImageHeight = aguardarLupa1.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(5000);
+        try { ExecuteCode.SetCurrentObject("Teclado - Digitar CNPJ Excel", ""); } catch { }
+        new Keyboard() {
+            Label = "Teclado - Digitar CNPJ Excel",
+            Text = $"{cnpj}"
+        }.TypeString();
+        AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Lupa Dois (Ok)", "aguardarLupa2"); } catch { }
+        aguardarLupa2 = new WaitImageFromScreen(){
+            Name = "aguardarLupa2",
+            Label = "Aguardar Imagem - Lupa Dois (Ok)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Lupa e Cnpj\Dois.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarLupa2.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dois",
+        X = aguardarLupa2.RectImage.X,
+        Y = aguardarLupa2.RectImage.Y,
+        ImageWidth = aguardarLupa2.RectImage.Width,
+        ImageHeight = aguardarLupa2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina", "validacaoParceiroNegocio"); } catch { }
+    validacaoParceiroNegocio();
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina", "escrituracaoDeNotas3"); } catch { }
+    escrituracaoDeNotas3();
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void validacaoParceiroNegocio() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3.2.2 - Validação Parceiro de Negócios";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        AgentCore.Components.Sleep.Wait(4000);
+        try { ExecuteCode.SetCurrentObject("Teclado", ""); } catch { }
+        new Keyboard() {
+            Label = "Teclado",
+            Keys = new List<VirtualKeyCode>(){(VirtualKeyCode)9},
+            KeysModifier = new List<VirtualKeyCode>(){}
+        }.KeyTap();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Validação PN Dois (Novo)", "aguardarValidacaoPn2"); } catch { }
+        aguardarValidacaoPn2 = new WaitImageFromScreen(){
+            Name = "aguardarValidacaoPn2",
+            Label = "Aguardar Imagem - Validação PN Dois (Novo)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Parceiro de Negócios\Validação\Dois.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 15
+        }.Run();
+        aguardarValidacaoPn2.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Condição If - Validar se Parceiro de Negócios Existe", ""); } catch { }
+        if (aguardarValidacaoPn2.RectImage.Width * aguardarValidacaoPn2.RectImage.Height != 0) {
+            try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+            new Mouse() {
+                Label = "Clicar na Imagem - Dois",
+                X = aguardarValidacaoPn2.RectImage.X,
+                Y = aguardarValidacaoPn2.RectImage.Y,
+                ImageWidth = aguardarValidacaoPn2.RectImage.Width,
+                ImageHeight = aguardarValidacaoPn2.RectImage.Height,
+                ChangeX = 0,
+                ChangeY = 0,
+                TypeActionMouse = TypeActionMouse.LEFT,
+                DoubleClick = false
+            }. Run();
+            try { ExecuteCode.SetCurrentObject("Chamar Rotina", "adicionarPn"); } catch { }
+            adicionarPn();
+            try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+            return ;
+        }
+        else {
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+        }
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void escrituracaoDeNotas3() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3.2.3 - Escrituração de Notas (3)";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Um (Selecionar Item)", "aguardarEscrituracao1"); } catch { }
+        aguardarEscrituracao1 = new WaitImageFromScreen(){
+            Name = "aguardarEscrituracao1",
+            Label = "Aguardar Imagem - Escrituração Um (Selecionar Item)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Um.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 30
+        }.Run();
+        aguardarEscrituracao1.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+    try { ExecuteCode.SetCurrentObject("Condição If - Selecionar se Item está selecionado", ""); } catch { }
+    if (aguardarEscrituracao1.RectImage.Width * aguardarEscrituracao1.RectImage.Height != 1) {
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração 2 (Clicar Campo Item)", "aguardarEscrituracao2"); } catch { }
+    aguardarEscrituracao2 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao2",
+        Label = "Aguardar Imagem - Escrituração 2 (Clicar Campo Item)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Dois.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao2.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dois",
+        X = aguardarEscrituracao2.RectImage.X,
+        Y = aguardarEscrituracao2.RectImage.Y,
+        ImageWidth = aguardarEscrituracao2.RectImage.Width,
+        ImageHeight = aguardarEscrituracao2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(2000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar Número Item", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar Número Item",
+        Text = $"{codigoItem}"
+    }.TypeString();
+    }
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Três (Preço Unitário)", "aguardarEscrituracao3"); } catch { }
+    aguardarEscrituracao3 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao3",
+        Label = "Aguardar Imagem - Escrituração Três (Preço Unitário)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Tres.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao3.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Três", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Três",
+        X = aguardarEscrituracao3.RectImage.X,
+        Y = aguardarEscrituracao3.RectImage.Y,
+        ImageWidth = aguardarEscrituracao3.RectImage.Width,
+        ImageHeight = aguardarEscrituracao3.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = -15,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(4000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar Preço Unitário", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar Preço Unitário",
+        Text = $"{valorServico}"
+    }.TypeString();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Quatro (Imposto)", "aguardarEscrituracao4"); } catch { }
+    aguardarEscrituracao4 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao4",
+        Label = "Aguardar Imagem - Quatro (Imposto)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Quatro.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao4.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Quatro", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Quatro",
+        X = aguardarEscrituracao4.RectImage.X,
+        Y = aguardarEscrituracao4.RectImage.Y,
+        ImageWidth = aguardarEscrituracao4.RectImage.Width,
+        ImageHeight = aguardarEscrituracao4.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Cinco (Tipo NF)", "aguardarEscrituracao5"); } catch { }
+    aguardarEscrituracao5 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao5",
+        Label = "Aguardar Imagem - Escrituração Cinco (Tipo NF)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Cinco.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao5.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Cinco", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Cinco",
+        X = aguardarEscrituracao5.RectImage.X,
+        Y = aguardarEscrituracao5.RectImage.Y,
+        ImageWidth = aguardarEscrituracao5.RectImage.Width,
+        ImageHeight = aguardarEscrituracao5.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Seis (Selecionar Externo)", "aguardarEscrituracao6"); } catch { }
+    aguardarEscrituracao6 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao6",
+        Label = "Aguardar Imagem - Escrituração Seis (Selecionar Externo)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Seis.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao6.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Seis", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Seis",
+        X = aguardarEscrituracao6.RectImage.X,
+        Y = aguardarEscrituracao6.RectImage.Y,
+        ImageWidth = aguardarEscrituracao6.RectImage.Width,
+        ImageHeight = aguardarEscrituracao6.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(3000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar Nota Fiscal", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar Nota Fiscal",
+        Text = $"{notaFiscal}"
+    }.TypeString();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Sete (Selecionar Modelo)", "aguardarEscrituracao7"); } catch { }
+    aguardarEscrituracao7 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao7",
+        Label = "Aguardar Imagem - Sete (Selecionar Modelo)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Sete.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao7.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Sete", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Sete",
+        X = aguardarEscrituracao7.RectImage.X,
+        Y = aguardarEscrituracao7.RectImage.Y,
+        ImageWidth = aguardarEscrituracao7.RectImage.Width,
+        ImageHeight = aguardarEscrituracao7.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(3000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar ''N''", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar ''N''",
+        Text = $" N"
+    }.TypeString();
+    AgentCore.Components.Sleep.Wait(3000);
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Oito (Selecionar Modelo NFse )", "aguardarEscrituracao8"); } catch { }
+    aguardarEscrituracao8 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao8",
+        Label = "Aguardar Imagem - Escrituração Oito (Selecionar Modelo NFse )",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Oito.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao8.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Oito", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Oito",
+        X = aguardarEscrituracao8.RectImage.X,
+        Y = aguardarEscrituracao8.RectImage.Y,
+        ImageWidth = aguardarEscrituracao8.RectImage.Width,
+        ImageHeight = aguardarEscrituracao8.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(3000);
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Nove (Selecionar Campo Data Lançamento)", "aguardarEscrituracao9"); } catch { }
+    aguardarEscrituracao9 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao9",
+        Label = "Aguardar Imagem - Escrituração Nove (Selecionar Campo Data Lançamento)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Nove.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao9.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Nove", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Nove",
+        X = aguardarEscrituracao9.RectImage.X,
+        Y = aguardarEscrituracao9.RectImage.Y,
+        ImageWidth = aguardarEscrituracao9.RectImage.Width,
+        ImageHeight = aguardarEscrituracao9.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = -15,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(4000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar Data Lançamento", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar Data Lançamento",
+        Text = $"{dataDoc}"
+    }.TypeString();
+    AgentCore.Components.Sleep.Wait(4000);
+    try { ExecuteCode.SetCurrentObject("Teclado - (TAB)", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - (TAB)",
+        Keys = new List<VirtualKeyCode>(){(VirtualKeyCode)9},
+        KeysModifier = new List<VirtualKeyCode>(){}
+    }.KeyTap();
+    try { ExecuteCode.SetCurrentObject("Teclado - (TAB)", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - (TAB)",
+        Keys = new List<VirtualKeyCode>(){(VirtualKeyCode)9},
+        KeysModifier = new List<VirtualKeyCode>(){}
+    }.KeyTap();
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar Data Documento", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar Data Documento",
+        Text = $"{dataDoc}"
+    }.TypeString();
+    AgentCore.Components.Sleep.Wait(3000);
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Dez (Clicar Janela Nota Fiscal de Saída)", "aguardarEscrituracao10"); } catch { }
+    aguardarEscrituracao10 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao10",
+        Label = "Aguardar Imagem - Escrituração Dez (Clicar Janela Nota Fiscal de Saída)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Dez.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao10.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dez", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dez",
+        X = aguardarEscrituracao10.RectImage.X,
+        Y = aguardarEscrituracao10.RectImage.Y,
+        ImageWidth = aguardarEscrituracao10.RectImage.Width,
+        ImageHeight = aguardarEscrituracao10.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Mouse - Rolar Página", ""); } catch { }
+    new Mouse() {
+        Label = "Mouse - Rolar Página",
+        X = 1194,
+        Y = 402,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }.Drag(1193, 613);
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Onze (Adicionar e Novo)", "aguardarEscrituracao11"); } catch { }
+    aguardarEscrituracao11 = new WaitImageFromScreen(){
+        Name = "aguardarEscrituracao11",
+        Label = "Aguardar Imagem - Escrituração Onze (Adicionar e Novo)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Onze.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarEscrituracao11.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Onze", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Onze",
+        X = aguardarEscrituracao11.RectImage.X,
+        Y = aguardarEscrituracao11.RectImage.Y,
+        ImageWidth = aguardarEscrituracao11.RectImage.Width,
+        ImageHeight = aguardarEscrituracao11.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Doze (Clicar Sim)", "aguardarEscrituracao12"); } catch { }
+        aguardarEscrituracao12 = new WaitImageFromScreen(){
+            Name = "aguardarEscrituracao12",
+            Label = "Aguardar Imagem - Escrituração Doze (Clicar Sim)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Doze.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarEscrituracao12.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Doze", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Doze",
+            X = aguardarEscrituracao12.RectImage.X,
+            Y = aguardarEscrituracao12.RectImage.Y,
+            ImageWidth = aguardarEscrituracao12.RectImage.Width,
+            ImageHeight = aguardarEscrituracao12.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(3000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Doze (Clicar Sim)", "aguardarEscrituracao12"); } catch { }
+        aguardarEscrituracao12 = new WaitImageFromScreen(){
+            Name = "aguardarEscrituracao12",
+            Label = "Aguardar Imagem - Escrituração Doze (Clicar Sim)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Doze.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarEscrituracao12.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Doze", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Doze",
+            X = aguardarEscrituracao12.RectImage.X,
+            Y = aguardarEscrituracao12.RectImage.Y,
+            ImageWidth = aguardarEscrituracao12.RectImage.Width,
+            ImageHeight = aguardarEscrituracao12.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+    AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Escrituração Quatorze (Sucesso na escrituração)", "aguardarEscrituracao14"); } catch { }
+        aguardarEscrituracao14 = new WaitImageFromScreen(){
+            Name = "aguardarEscrituracao14",
+            Label = "Aguardar Imagem - Escrituração Quatorze (Sucesso na escrituração)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Escrituração\Quatorze.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarEscrituracao14.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Condição If - Verificar Sucesso", ""); } catch { }
+        if (aguardarEscrituracao14.RectImage.Width * aguardarEscrituracao14.RectImage.Height != 0) {
+            try { ExecuteCode.SetCurrentObject("Inserir Dados em Tabela do Histórico", "criarTabelaHistorico"); } catch { }
+            criarTabelaHistorico.Label = "Inserir Dados em Tabela do Histórico";
+            criarTabelaHistorico.AddData(new dynamic[] { $@"{cnpj}" });
+            try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Processo Laço", "processoLaco"); } catch { }
+            processoLaco = true;
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA001";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Nota escriturada com sucesso";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(true)";
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+        }
+        else {
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA002";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Não foi possível escriturar a nota";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(false)";
+    try { ExecuteCode.SetCurrentObject("Exportar - Tabela Histórico", "criarTabelaHistorico"); } catch { }
+    criarTabelaHistorico.Label = "Exportar - Tabela Histórico";
+    criarTabelaHistorico.Target = EnumDatatableFormat.Excel;
+    criarTabelaHistorico.OutputPath = $@"{diretorioHist}";
+    criarTabelaHistorico.FileName = $@"{nomeArquivoHist}_{dataHoje}";
+    criarTabelaHistorico.Export();
+    try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Prevenção de Erros Um (Fechar Janela)", "aguardarPrevencaoErros1"); } catch { }
+    aguardarPrevencaoErros1 = new WaitImageFromScreen(){
+        Name = "aguardarPrevencaoErros1",
+        Label = "Aguardar Imagem - Prevenção de Erros Um (Fechar Janela)",
+        Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Prevenção de Erros\Um.png",
+        TypeWaitImage = TypeWaitImage.Path,
+        SaveScreenshot = false,
+        PathToSaveScreenshot = $@"",
+        CreateDirectory = true,
+        Time = 60
+    }.Run();
+    aguardarPrevencaoErros1.Response(out result);
+    if (false && result.code != "RPA001")
+    {
+        return;
+    }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Prevenção de Erros Um", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Prevenção de Erros Um",
+        X = aguardarPrevencaoErros1.RectImage.X,
+        Y = aguardarPrevencaoErros1.RectImage.Y,
+        ImageWidth = aguardarPrevencaoErros1.RectImage.Width,
+        ImageHeight = aguardarPrevencaoErros1.RectImage.Height,
+        ChangeX = 50,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina - Escrituração de Notas (1)", "escrituracaoDeNotas1"); } catch { }
+    escrituracaoDeNotas1();
+        }
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+        criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+        criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+        try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid de CNPJ", "criarGridCnpjs"); } catch { }
+        criarGridCnpjs.Label = "Inserir Linha - Grid de CNPJ";
+        criarGridCnpjs.GridPutValues($"0d9a8dd9-2787-4bfd-a8f2", new string[] { $"{statusRetorno}",$"{cnpj}",$"{valorServico}" });
+    }
+}
+
+public void adicionarPn() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3.2.4 - Adicionar Parceiro de Negócios";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+    AgentCore.Components.Sleep.Wait(3000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Novo PN Um (Consultar Cadastro)", "aguardarNovoPn1"); } catch { }
+        aguardarNovoPn1 = new WaitImageFromScreen(){
+            Name = "aguardarNovoPn1",
+            Label = "Aguardar Imagem - Novo PN Um (Consultar Cadastro)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Parceiro de Negócios\Novo Pn\Um.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarNovoPn1.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Um", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Um",
+            X = aguardarNovoPn1.RectImage.X,
+            Y = aguardarNovoPn1.RectImage.Y,
+            ImageWidth = aguardarNovoPn1.RectImage.Width,
+            ImageHeight = aguardarNovoPn1.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+    AgentCore.Components.Sleep.Wait(3000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Novo Pn Dois (Clicar Campo CNPJ)", "aguardarNovoPn2"); } catch { }
+        aguardarNovoPn2 = new WaitImageFromScreen(){
+            Name = "aguardarNovoPn2",
+            Label = "Aguardar Imagem - Novo Pn Dois (Clicar Campo CNPJ)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Parceiro de Negócios\Novo Pn\Dois.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarNovoPn2.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dois",
+        X = aguardarNovoPn2.RectImage.X,
+        Y = aguardarNovoPn2.RectImage.Y,
+        ImageWidth = aguardarNovoPn2.RectImage.Width,
+        ImageHeight = aguardarNovoPn2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(3000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar CNPJ", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar CNPJ",
+        Text = $"{cnpj}"
+    }.TypeString();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Novo Pn Três (Regularizar)", "aguardarNovoPn3"); } catch { }
+        aguardarNovoPn3 = new WaitImageFromScreen(){
+            Name = "aguardarNovoPn3",
+            Label = "Aguardar Imagem - Novo Pn Três (Regularizar)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Parceiro de Negócios\Novo Pn\Tres.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarNovoPn3.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Três", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Três",
+        X = aguardarNovoPn3.RectImage.X,
+        Y = aguardarNovoPn3.RectImage.Y,
+        ImageWidth = aguardarNovoPn3.RectImage.Width,
+        ImageHeight = aguardarNovoPn3.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Novo Pn Quatro (Adicionado com Sucesso)", "aguardarNovoPn4"); } catch { }
+        aguardarNovoPn4 = new WaitImageFromScreen(){
+            Name = "aguardarNovoPn4",
+            Label = "Aguardar Imagem - Novo Pn Quatro (Adicionado com Sucesso)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Parceiro de Negócios\Novo Pn\Quatro.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 80
+        }.Run();
+        aguardarNovoPn4.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Condição If - Confirmar Sucesso", ""); } catch { }
+        if (aguardarNovoPn4.RectImage.Width * aguardarNovoPn4.RectImage.Height != 0) {
+            try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Novo Pn Cinco (Botão fechar)", "aguardarNovoPn5"); } catch { }
+            aguardarNovoPn5 = new WaitImageFromScreen(){
+                Name = "aguardarNovoPn5",
+                Label = "Aguardar Imagem - Novo Pn Cinco (Botão fechar)",
+                Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Parceiro de Negócios\Novo Pn\Cinco.png",
+                TypeWaitImage = TypeWaitImage.Path,
+                SaveScreenshot = false,
+                PathToSaveScreenshot = $@"",
+                CreateDirectory = true,
+                Time = 60
+            }.Run();
+            aguardarNovoPn5.Response(out result);
+            if (false && result.code != "RPA001")
+            {
+                return;
+            }
+            try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Cinco ", ""); } catch { }
+            new Mouse() {
+                Label = "Clicar na Imagem - Cinco ",
+                X = aguardarNovoPn5.RectImage.X,
+                Y = aguardarNovoPn5.RectImage.Y,
+                ImageWidth = aguardarNovoPn5.RectImage.Width,
+                ImageHeight = aguardarNovoPn5.RectImage.Height,
+                ChangeX = 350,
+                ChangeY = 0,
+                TypeActionMouse = TypeActionMouse.LEFT,
+                DoubleClick = false
+            }. Run();
+            AgentCore.Components.Sleep.Wait(3000);
+            try { ExecuteCode.SetCurrentObject("Chamar Rotina", "adicionarPn3"); } catch { }
+            adicionarPn3();
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA001";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Parceiro de Negócios adicionado com sucesso";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(true)";
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+        }
+        else {
+            try { ExecuteCode.SetCurrentObject("Confirmar erro na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA002";
+            try { ExecuteCode.SetCurrentObject("Confirmar erro na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Não foi possível adicionar o Parceiro de Negócios";
+            try { ExecuteCode.SetCurrentObject("Confirmar erro na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(false)";
+        }
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void adicionarPn3() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3.2.5 - Adicionar Parceiro de Negócios (2)";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Lupa Um (Lupa)", "aguardarLupa1"); } catch { }
+        aguardarLupa1 = new WaitImageFromScreen(){
+            Name = "aguardarLupa1",
+            Label = "Aguardar Imagem - Lupa Um (Lupa)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Lupa e Cnpj\Um.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarLupa1.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Um", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Um",
+        X = aguardarLupa1.RectImage.X,
+        Y = aguardarLupa1.RectImage.Y,
+        ImageWidth = aguardarLupa1.RectImage.Width,
+        ImageHeight = aguardarLupa1.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    AgentCore.Components.Sleep.Wait(5000);
+    try { ExecuteCode.SetCurrentObject("Teclado - Digitar CNPJ Excel", ""); } catch { }
+    new Keyboard() {
+        Label = "Teclado - Digitar CNPJ Excel",
+        Text = $"{cnpj}"
+    }.TypeString();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Lupa Dois (Ok)", "aguardarLupa2"); } catch { }
+        aguardarLupa2 = new WaitImageFromScreen(){
+            Name = "aguardarLupa2",
+            Label = "Aguardar Imagem - Lupa Dois (Ok)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign\Imagens\Lupa e Cnpj\Dois.png",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarLupa2.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+    try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+    new Mouse() {
+        Label = "Clicar na Imagem - Dois",
+        X = aguardarLupa2.RectImage.X,
+        Y = aguardarLupa2.RectImage.Y,
+        ImageWidth = aguardarLupa2.RectImage.Width,
+        ImageHeight = aguardarLupa2.RectImage.Height,
+        ChangeX = 0,
+        ChangeY = 0,
+        TypeActionMouse = TypeActionMouse.LEFT,
+        DoubleClick = false
+    }. Run();
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void adicionarNfCpf() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"4- Adicionar Nf de CPF";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+    AgentCore.Components.Sleep.Wait(5000);
+        try { ExecuteCode.SetCurrentObject("Teclado - (Tab)", ""); } catch { }
+        new Keyboard() {
+            Label = "Teclado - (Tab)",
+            Keys = new List<VirtualKeyCode>(){(VirtualKeyCode)9},
+            KeysModifier = new List<VirtualKeyCode>(){}
+        }.KeyTap();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Um (Novo)", "aguardarCpf1"); } catch { }
+        aguardarCpf1 = new WaitImageFromScreen(){
+            Name = "aguardarCpf1",
+            Label = "Aguardar Imagem - Um (Novo)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Um.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf1.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Um", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Um",
+            X = aguardarCpf1.RectImage.X,
+            Y = aguardarCpf1.RectImage.Y,
+            ImageWidth = aguardarCpf1.RectImage.Width,
+            ImageHeight = aguardarCpf1.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Dois (Digitar Nome)", "aguardarCpf2"); } catch { }
+        aguardarCpf2 = new WaitImageFromScreen(){
+            Name = "aguardarCpf2",
+            Label = "Aguardar Imagem - Dois (Digitar Nome)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Dois.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf2.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dois", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Dois",
+            X = aguardarCpf2.RectImage.X,
+            Y = aguardarCpf2.RectImage.Y,
+            ImageWidth = aguardarCpf2.RectImage.Width,
+            ImageHeight = aguardarCpf2.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Três (Selecionar Contabilidade)", "aguardarCpf3"); } catch { }
+        aguardarCpf3 = new WaitImageFromScreen(){
+            Name = "aguardarCpf3",
+            Label = "Aguardar Imagem - Três (Selecionar Contabilidade)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Tres.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf3.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Três", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Três",
+            X = aguardarCpf3.RectImage.X,
+            Y = aguardarCpf3.RectImage.Y,
+            ImageWidth = aguardarCpf3.RectImage.Width,
+            ImageHeight = aguardarCpf3.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Quatro (Selecionar Imposto)", "aguardarCpf4"); } catch { }
+        aguardarCpf4 = new WaitImageFromScreen(){
+            Name = "aguardarCpf4",
+            Label = "Aguardar Imagem - Quatro (Selecionar Imposto)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Quatro.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf4.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Quatro", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Quatro",
+            X = aguardarCpf4.RectImage.X,
+            Y = aguardarCpf4.RectImage.Y,
+            ImageWidth = aguardarCpf4.RectImage.Width,
+            ImageHeight = aguardarCpf4.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Cinco (Clicar 3 Pontos)", "aguardarCpf5"); } catch { }
+        aguardarCpf5 = new WaitImageFromScreen(){
+            Name = "aguardarCpf5",
+            Label = "Aguardar Imagem - Cinco (Clicar 3 Pontos)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Cinco.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf5.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Cinco", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Cinco",
+            X = aguardarCpf5.RectImage.X,
+            Y = aguardarCpf5.RectImage.Y,
+            ImageWidth = aguardarCpf5.RectImage.Width,
+            ImageHeight = aguardarCpf5.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Seis (Selecionar Campo CPF)", "aguardarCpf6"); } catch { }
+        aguardarCpf6 = new WaitImageFromScreen(){
+            Name = "aguardarCpf6",
+            Label = "Aguardar Imagem - Seis (Selecionar Campo CPF)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Seis.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf6.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Seis", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Seis",
+            X = aguardarCpf6.RectImage.X,
+            Y = aguardarCpf6.RectImage.Y,
+            ImageWidth = aguardarCpf6.RectImage.Width,
+            ImageHeight = aguardarCpf6.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        try { ExecuteCode.SetCurrentObject("Teclado - Digitar CPF", ""); } catch { }
+        new Keyboard() {
+            Label = "Teclado - Digitar CPF",
+            Text = $"{nomeCpf}"
+        }.TypeString();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Sete (Clicar Atualizar)", "aguardarCpf7"); } catch { }
+        aguardarCpf7 = new WaitImageFromScreen(){
+            Name = "aguardarCpf7",
+            Label = "Aguardar Imagem - Sete (Clicar Atualizar)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Sete.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf7.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Sete", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Sete",
+            X = aguardarCpf7.RectImage.X,
+            Y = aguardarCpf7.RectImage.Y,
+            ImageWidth = aguardarCpf7.RectImage.Width,
+            ImageHeight = aguardarCpf7.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Oito (Ok)", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Oito (Ok)",
+            X = aguardarLupa2.RectImage.X,
+            Y = aguardarLupa2.RectImage.Y,
+            ImageWidth = aguardarLupa2.RectImage.Width,
+            ImageHeight = aguardarLupa2.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        try { ExecuteCode.SetCurrentObject("Aguardar Imagem - Nove (Adicionar)", "aguardarCpf9"); } catch { }
+        aguardarCpf9 = new WaitImageFromScreen(){
+            Name = "aguardarCpf9",
+            Label = "Aguardar Imagem - Nove (Adicionar)",
+            Path = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\ClickSign CPF add\Imagens\Cpf\Nove.jpg",
+            TypeWaitImage = TypeWaitImage.Path,
+            SaveScreenshot = false,
+            PathToSaveScreenshot = $@"",
+            CreateDirectory = true,
+            Time = 60
+        }.Run();
+        aguardarCpf9.Response(out result);
+        if (false && result.code != "RPA001")
+        {
+            return;
+        }
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Nove", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Nove",
+            X = aguardarCpf9.RectImage.X,
+            Y = aguardarCpf9.RectImage.Y,
+            ImageWidth = aguardarCpf9.RectImage.Width,
+            ImageHeight = aguardarCpf9.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        AgentCore.Components.Sleep.Wait(2000);
+        try { ExecuteCode.SetCurrentObject("Clicar na Imagem - Dez (Sim)", ""); } catch { }
+        new Mouse() {
+            Label = "Clicar na Imagem - Dez (Sim)",
+            X = aguardarEscrituracao12.RectImage.X,
+            Y = aguardarEscrituracao12.RectImage.Y,
+            ImageWidth = aguardarEscrituracao12.RectImage.Width,
+            ImageHeight = aguardarEscrituracao12.RectImage.Height,
+            ChangeX = 0,
+            ChangeY = 0,
+            TypeActionMouse = TypeActionMouse.LEFT,
+            DoubleClick = false
+        }. Run();
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Escriturar Nota", "escrituracaoDeNotas3"); } catch { }
+        escrituracaoDeNotas3();
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void lerHistorico() {
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Variáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"5 - Ler Histórico";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Abrir Excel - Histórico", "abrirExcelHistorico"); } catch { }
+        abrirExcelHistorico = new Excel()
+        {
+            Name = "abrirExcelHistorico",
+            Label = "Abrir Excel - Histórico",
+            Path = $@"{diretorioHist}\{nomeArquivoHist}.xlsx",
+            Password = $"",
+            BackgroundProcess = true,
+            ReadOnOpen = false,
+        }.Open();
+        try { ExecuteCode.SetCurrentObject("Ler Dados Excel - Histórico", "abrirExcelHistorico"); } catch { }
+        abrirExcelHistorico.Label = "Ler Dados Excel - Histórico";
+        abrirExcelHistorico.ReadReturnType = EnumReturnType.InputTable;
+        lerDadosExcelHistorico = abrirExcelHistorico.ReadExcelRange(1, $@"A", 1, $@"", true, false, ExcelReadEmptyRow.Skip).Result;
+        try { ExecuteCode.SetCurrentObject("Varrer Dados Excel - Histórico", "varrerDadosExcelHistorico"); } catch { }
+        countHist = 0;
+        foreach (DataRow varrerDadosExcelHistorico in InputTable.GetEnumerable((DataTable)lerDadosExcelHistorico.Result))
+        {
+            try { ExecuteCode.SetCurrentObject("Atribuir Valor Variável - Histórico", "cnpjHistorico"); } catch { }
+            cnpjHistorico = $@"{varrerDadosExcelHistorico[0]}";
+            try { ExecuteCode.SetCurrentObject("Condição If", ""); } catch { }
+            if (cpnjlinha == cnpjHistorico) {
+                try { ExecuteCode.SetCurrentObject("Declarar se CNPJ ja foi pesquisado", "pesquisado"); } catch { }
+                pesquisado = true;
+    try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+    return ;
+            }
+            countHist = countHist + 1;
+        }
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+    try { ExecuteCode.SetCurrentObject("Inserir Linha - Grid Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade.Label = "Inserir Linha - Grid Rastreabilidade";
+    criarGridRastreabilidade.GridPutValues($"02cb18ab-ef47-4363-8f30", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
