@@ -1,0 +1,612 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections;
+using OpenQA.Selenium;
+using AgentCore.Entity.Enum;
+using AgentCore.Entity.Dto;
+using WindowsInput.Native;
+using System.IO;
+using AgentCore.Components;
+using AgentCore.Entity;
+using AgentCore.Util;
+using System;
+using System.Data;
+using System.Linq;
+using System.Globalization;
+List<string> a = new List<string>();
+string codigoRetorno = $@"RPA000";
+string mensagemRetorno = $@"Processo Incompleto.";
+string statusRetorno = $@"#()";
+string nomeRotina = $@"Início";
+Grid criarGridRastreabilidade;
+Grid criarGridResultadoFap;
+int count;
+WebAutomation abrirSiscomex;
+bool verificarSeExisteBotaoGov;
+WebAutomationFindElement clicarCertificado;
+WebAutomationFindElement entrarCertificado;
+WindowsAutomation selecionarJanela;
+WindowsAutomationFindElement selecionarJanelaCertificado;
+bool verificarConsultarFap;
+WebAutomationFindElement buscarConsultaFAP;
+WebAutomationFindElement escreverCampoAno;
+WebAutomationFindElement escreverCampoCNPJ;
+WebAutomationFindElement clicarBotaoFapSimplificado;
+WindowsAutomation FAP;
+WindowsAutomationFindElement botaoExportarFap;
+WindowsAutomationFindElement buscarBaixarCSV;
+bool verificarFapSimplificado;
+List<string> buscarArquivoFap;
+string[] varrerDadosCsv;
+ResponseDto result = Response();
+Start();
+return result;
+
+public void Start() {
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina - Global", "global"); } catch { }
+    global();
+    try { ExecuteCode.SetCurrentObject("Chamar Rotina - Rotina Principal", "rotinaPrincipal"); } catch { }
+    rotinaPrincipal();
+}
+
+public void global() {
+    try { ExecuteCode.SetCurrentObject("Criar Grid - Rastreabilidade FAP", "criarGridRastreabilidade"); } catch { }
+    criarGridRastreabilidade = new Grid() {
+        Name = "criarGridRastreabilidade",
+        Label = "Criar Grid - Rastreabilidade FAP",
+        NameGrid = $"criarGridRastreabilidade",
+        Title = $"Rastreabilidade FAP",
+        Spot = $"GLOBAL",
+        Clearable = true,
+        Editable = false,
+        Labels = new string[]{$"status", $"Descrição", $"Rotina"},
+        IdExecution = IdExecution
+    }.Run();
+    try { ExecuteCode.SetCurrentObject("Criar Grid Resultados FAP", "criarGridResultadoFap"); } catch { }
+    criarGridResultadoFap = new Grid() {
+        Name = "criarGridResultadoFap",
+        Label = "Criar Grid Resultados FAP",
+        NameGrid = $"criarGridResultadoFap",
+        Title = $"Resultados FAP",
+        Spot = $"GLOBAL",
+        Clearable = true,
+        Editable = false,
+        Labels = new string[]{$"CNPJ Estabelecimento", $"FAP"},
+        IdExecution = IdExecution
+    }.Run();
+}
+
+public void rotinaPrincipal() {
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Abrir Navegador", "AbrirNavegador"); } catch { }
+        AbrirNavegador();
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Selecionar Certificado", "selecionarCertificado"); } catch { }
+        selecionarCertificado();
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Consulta FAP", "ConsultaFAP"); } catch { }
+        ConsultaFAP();
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Janela FAP Simplificado", "janelaFapSimplificado"); } catch { }
+        janelaFapSimplificado();
+        try { ExecuteCode.SetCurrentObject("Chamar Rotina - Processo CSV", "processoCsv"); } catch { }
+        processoCsv();
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+}
+
+public void AbrirNavegador() {
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"2 - Abrir Navegador";
+    try { ExecuteCode.SetCurrentObject("Laço Livre - Abrir Navegador", "lacoAbrirNavegador"); } catch { }
+    count = 0;
+    while (count < 3)
+    {
+        try {
+            try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+            try { ExecuteCode.SetCurrentObject("Abrir Navegador", "abrirSiscomex"); } catch { }
+            abrirSiscomex = new WebAutomation()
+            {
+                Name = "abrirSiscomex",
+                Label = "Abrir Navegador",
+                CheckProcess = false,
+                Arguments = new List<string> { $"ignore-certificate-errors" },
+                Browser = WebBrowser.Chrome,
+                Url = $@"https://fap.dataprev.gov.br/",
+                AnonymousGuide = true,
+                MobileMode = false,
+                Timeout = 60,
+                MultiplesDownload = false,
+                PageLoadStrategy = PageLoadStrategy.None,
+                VerifyLink = true,
+                DirDownload = $@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\FAP\Excel",
+                DevTools = false
+            };
+            abrirSiscomex.Run();
+            try { ExecuteCode.SetCurrentObject("Verificar se Existe - Botão Entrar com GOV", "verificarSeExisteBotaoGov"); } catch { }
+            verificarSeExisteBotaoGov = new WebAutomationFindElement(abrirSiscomex) {
+                Name = "verificarSeExisteBotaoGov",
+                Label = "Verificar se Existe - Botão Entrar com GOV",
+                Xpath = $"//*[@id='root']/div[2]/div/div/div/div[2]/div/button[1]",
+                Timeout = 10,
+                FindType = FindType.ONE,
+                WebElementSearchType = WebElementSearchType.XPath
+            }.Run().Exists;
+            try { ExecuteCode.SetCurrentObject("Condição If - Verificar se Existe", ""); } catch { }
+            if (verificarSeExisteBotaoGov) {
+                try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+                codigoRetorno = $@"RPA001";
+                try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+                mensagemRetorno = $@"Site acessado";
+                try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+                statusRetorno = $@"#(true)";
+                try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+                return ;
+            }
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA002";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Site não carregado";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(false)";
+            try { ExecuteCode.SetCurrentObject("Fechar Navegador", "abrirSiscomex");
+      abrirSiscomex.Quit();
+    } catch { }
+        }
+        catch (Exception ex) {
+            try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA002";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+            try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(false)";
+        }
+        finally {
+            try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+            try { ExecuteCode.SetCurrentObject("Inserir Linha - Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+            criarGridRastreabilidade.Label = "Inserir Linha - Rastreabilidade";
+            criarGridRastreabilidade.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+        }
+        count = count + 1;
+    }
+}
+
+public void selecionarCertificado() {
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"3 - Selecionar Certificado";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Buscar Elementos - Clicar Botão Certificado", "clicarCertificado"); } catch { }
+        clicarCertificado = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "clicarCertificado",
+            Label = "Buscar Elementos - Clicar Botão Certificado",
+            Xpath = $"//*[@id='root']/div[2]/div/div/div/div[2]/div/button[1]",
+            MinReturns = 1,
+            FindType = FindType.ONE,
+            Timeout = 60,
+            IsPassword = false,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run();
+        clicarCertificado.Click(0);
+        try { ExecuteCode.SetCurrentObject("Buscar Elementos - Entrar com Certificado", "entrarCertificado"); } catch { }
+        entrarCertificado = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "entrarCertificado",
+            Label = "Buscar Elementos - Entrar com Certificado",
+            Xpath = $"//*[@id='cert-digital']/a",
+            MinReturns = 1,
+            FindType = FindType.ONE,
+            Timeout = 60,
+            IsPassword = false,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run();
+        entrarCertificado.Click(0);
+        try { ExecuteCode.SetCurrentObject("Selecionar Janela - Clicar Campo Certificado ", "selecionarJanela"); } catch { }
+        selecionarJanela = new WindowsAutomation()
+        {
+            Name = "selecionarJanela",
+            Label = "Selecionar Janela - Clicar Campo Certificado ",
+            Maximize = false,
+            Timeout = 60,
+            IsSelect = true,
+            SearchTypeWindow = EnumSearchTypeWindow.Name,
+            ExactlyTitle = false,
+            NameWindow = $@"Selecione um certificado",
+        }.Run();
+        selecionarJanela.Response(out result);
+        try { ExecuteCode.SetCurrentObject("Encontrar Campo - Certificado", "selecionarJanelaCertificado"); } catch { }
+        var conditions86 = new List<ConditionDto>();
+        conditions86.Add(new ConditionDto() { Type=WindowSearchType.XPATH, Value=$"Custom[1]/Pane[1]/Pane[1]/Pane[1]/Pane[2]/Button[2]" });
+        selecionarJanelaCertificado = new WindowsAutomationFindElement(selecionarJanela)
+        {
+            Name = "selecionarJanelaCertificado",
+            Label = "Encontrar Campo - Certificado",
+            Conditions = conditions86,
+            SearchType = WindowSearchType.CONDITIONS,
+            Timeout = 60,
+            CleanField = false,
+            FindType = FindType.ONE,
+        }.Run();
+        selecionarJanelaCertificado.Click(0);
+        try { ExecuteCode.SetCurrentObject("Verificar se Existe - Consultar FAP", "verificarConsultarFap"); } catch { }
+        verificarConsultarFap = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "verificarConsultarFap",
+            Label = "Verificar se Existe - Consultar FAP",
+            Xpath = $"//*[@id='root']/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div/div/div/div/a/div/div[2]/div",
+            Timeout = 10,
+            FindType = FindType.ONE,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run().Exists;
+        try { ExecuteCode.SetCurrentObject("Condição If - Verificar se Existe", ""); } catch { }
+        if (verificarConsultarFap) {
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA001";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Acesso a consulta FAP";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(true)";
+            try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+            return ;
+        }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Não foi possível selecionar o certificado";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+        try { ExecuteCode.SetCurrentObject("Fechar Navegador", "abrirSiscomex");
+      abrirSiscomex.Quit();
+    } catch { }
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Inserir Linha - Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+        criarGridRastreabilidade.Label = "Inserir Linha - Rastreabilidade";
+        criarGridRastreabilidade.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void ConsultaFAP() {
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"4 - Consulta FAP";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Buscar Elementos - Clicar Botão Consulta FAP", "buscarConsultaFAP"); } catch { }
+        buscarConsultaFAP = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "buscarConsultaFAP",
+            Label = "Buscar Elementos - Clicar Botão Consulta FAP",
+            Xpath = $"//*[@id='root']/div[2]/div/div[2]/div/div[2]/div/div/div[1]/div/div/div/div/a/div/div[2]/div",
+            MinReturns = 1,
+            FindType = FindType.ONE,
+            Timeout = 60,
+            IsPassword = false,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run();
+        buscarConsultaFAP.Click(0);
+        try { ExecuteCode.SetCurrentObject("Buscar Elementos - Escrever Campo Ano", "escreverCampoAno"); } catch { }
+        escreverCampoAno = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "escreverCampoAno",
+            Label = "Buscar Elementos - Escrever Campo Ano",
+            Xpath = $"//*[@id='anoVigencia']",
+            MinReturns = 1,
+            FindType = FindType.ONE,
+            Timeout = 60,
+            IsPassword = false,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run();
+        escreverCampoAno.Type($"{DateTime.Now.Year}", 0);
+        try { ExecuteCode.SetCurrentObject("Teclado", ""); } catch { }
+        new Keyboard() {
+            Label = "Teclado",
+            Keys = new List<VirtualKeyCode>(){(VirtualKeyCode)13},
+            KeysModifier = new List<VirtualKeyCode>(){}
+        }.KeyTap();
+        try { ExecuteCode.SetCurrentObject("Buscar Elementos - Escrever Campo CNPJ", "escreverCampoCNPJ"); } catch { }
+        escreverCampoCNPJ = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "escreverCampoCNPJ",
+            Label = "Buscar Elementos - Escrever Campo CNPJ",
+            Xpath = $"//*[@id='cnpjRaiz']",
+            MinReturns = 1,
+            FindType = FindType.ONE,
+            Timeout = 60,
+            IsPassword = false,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run();
+        escreverCampoCNPJ.Type($"09.024.311 - EZESA BRASIL PARTICIPACOES LTDA.", 0);
+        try { ExecuteCode.SetCurrentObject("Teclado", ""); } catch { }
+        new Keyboard() {
+            Label = "Teclado",
+            Keys = new List<VirtualKeyCode>(){(VirtualKeyCode)13},
+            KeysModifier = new List<VirtualKeyCode>(){}
+        }.KeyTap();
+        try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA001";
+        try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Dados preenchidos";
+        try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(true)";
+        try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+        return ;
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Inserir Linha - Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+        criarGridRastreabilidade.Label = "Inserir Linha - Rastreabilidade";
+        criarGridRastreabilidade.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void janelaFapSimplificado() {
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"4.1 - Janela FAP Simplificado";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Buscar Elementos - Clicar Botão FAP Simplificado", "clicarBotaoFapSimplificado"); } catch { }
+        clicarBotaoFapSimplificado = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "clicarBotaoFapSimplificado",
+            Label = "Buscar Elementos - Clicar Botão FAP Simplificado",
+            Xpath = $"//*[@id='grid-form']/div[1]/form/div/div[2]/div/div[1]/div/span",
+            MinReturns = 1,
+            FindType = FindType.ONE,
+            Timeout = 60,
+            IsPassword = false,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run();
+        clicarBotaoFapSimplificado.Click(0);
+        try { ExecuteCode.SetCurrentObject("Selecionar Janela - FAP Simplificado por Estabelecimento", "FAP"); } catch { }
+        FAP = new WindowsAutomation()
+        {
+            Name = "FAP",
+            Label = "Selecionar Janela - FAP Simplificado por Estabelecimento",
+            Maximize = true,
+            Timeout = 60,
+            IsSelect = true,
+            SearchTypeWindow = EnumSearchTypeWindow.Name,
+            ExactlyTitle = false,
+            NameWindow = $@"FAP - Google Chrome",
+        }.Run();
+        FAP.Response(out result);
+        try { ExecuteCode.SetCurrentObject("Buscar elementos - Clicar Botão Exportar", "botaoExportarFap"); } catch { }
+        var conditions161 = new List<ConditionDto>();
+        conditions161.Add(new ConditionDto() { Type=WindowSearchType.XPATH, Value="/Document[1]/Table[1]/MenuItem[1]" });
+        botaoExportarFap = new WindowsAutomationFindElement(FAP)
+        {
+            Name = "botaoExportarFap",
+            Label = "Buscar elementos - Clicar Botão Exportar",
+            Conditions = conditions161,
+            SearchType = WindowSearchType.CONDITIONS,
+            Timeout = 60,
+            CleanField = false,
+            FindType = FindType.ONE,
+        }.Run();
+        botaoExportarFap.Click(0);
+        try { ExecuteCode.SetCurrentObject("Selecionar Janela - FAP Simplificado por Estabelecimento", "FAP"); } catch { }
+        FAP = new WindowsAutomation()
+        {
+            Name = "FAP",
+            Label = "Selecionar Janela - FAP Simplificado por Estabelecimento",
+            Maximize = true,
+            Timeout = 60,
+            IsSelect = true,
+            SearchTypeWindow = EnumSearchTypeWindow.Name,
+            ExactlyTitle = false,
+            NameWindow = $@"FAP - Google Chrome",
+        }.Run();
+        FAP.Response(out result);
+        try { ExecuteCode.SetCurrentObject("Buscar elemento - Baixar como CSV", "buscarBaixarCSV"); } catch { }
+        var conditions164 = new List<ConditionDto>();
+        conditions164.Add(new ConditionDto() { Type=WindowSearchType.XPATH, Value="/Document[1]/ToolTip[1]/Menu[1]/MenuItem[1]" });
+        buscarBaixarCSV = new WindowsAutomationFindElement(FAP)
+        {
+            Name = "buscarBaixarCSV",
+            Label = "Buscar elemento - Baixar como CSV",
+            Conditions = conditions164,
+            SearchType = WindowSearchType.CONDITIONS,
+            Timeout = 60,
+            CleanField = false,
+            FindType = FindType.ONE,
+        }.Run();
+        buscarBaixarCSV.Click(0);
+        try { ExecuteCode.SetCurrentObject("Verificar se Existe - Clicar Botão FAP Simplificado", "verificarFapSimplificado"); } catch { }
+        verificarFapSimplificado = new WebAutomationFindElement(abrirSiscomex) {
+            Name = "verificarFapSimplificado",
+            Label = "Verificar se Existe - Clicar Botão FAP Simplificado",
+            Xpath = $"//*[@id='grid-form']/div[1]/form/div/div[2]/div/div[1]/div/span",
+            Timeout = 10,
+            FindType = FindType.ONE,
+            WebElementSearchType = WebElementSearchType.XPath
+        }.Run().Exists;
+        try { ExecuteCode.SetCurrentObject("Condição If - Verificar se Existe", ""); } catch { }
+        if (verificarFapSimplificado) {
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA001";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Janela FAP Simplificado acessada";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(true)";
+            try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+            return ;
+        }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Não foi possível acessar a janela FAP Simplificado";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+        try { ExecuteCode.SetCurrentObject("Fechar Navegador", "abrirSiscomex");
+      abrirSiscomex.Quit();
+    } catch { }
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Inserir Linha - Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+        criarGridRastreabilidade.Label = "Inserir Linha - Rastreabilidade";
+        criarGridRastreabilidade.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void processoCsv() {
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"5 - Processo CSV";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Buscar Arquivos - FAP", "buscarArquivoFap"); } catch { }
+        buscarArquivoFap = new WindowsFile {
+            Name = "buscarArquivoFap",
+            Label = "Buscar Arquivos - FAP"
+        }.SearchFiles($@"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\FAP\Excel", new string[] { $".csv" }, false).Result;
+        try { ExecuteCode.SetCurrentObject("Condição If - Buscar Arquivos", ""); } catch { }
+        if (buscarArquivoFap.Count != 0) {
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA001";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Arquivo baixado";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(true)";
+            try { ExecuteCode.SetCurrentObject("Fechar Navegador", "abrirSiscomex");
+      abrirSiscomex.Quit();
+    } catch { }
+            try { ExecuteCode.SetCurrentObject("Chamar Rotina - Grid Resultados", "gridResultadosECsv"); } catch { }
+            gridResultadosECsv();
+            try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+            return ;
+        }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Não foi possível realizar o download do CSV";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    finally {
+        try { ExecuteCode.SetCurrentObject("Finally", "Finally"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Inserir Linha - Rastreabilidade", "criarGridRastreabilidade"); } catch { }
+        criarGridRastreabilidade.Label = "Inserir Linha - Rastreabilidade";
+        criarGridRastreabilidade.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{statusRetorno}",$"{mensagemRetorno}",$"{nomeRotina}" });
+    }
+}
+
+public void gridResultadosECsv() {
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "codigoRetorno"); } catch { }
+    codigoRetorno = $@"RPA000";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "mensagemRetorno"); } catch { }
+    mensagemRetorno = $@"Processo Incompleto.";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "statusRetorno"); } catch { }
+    statusRetorno = $@"#()";
+    try { ExecuteCode.SetCurrentObject("Resetar Varáveis de Rotina", "nomeRotina"); } catch { }
+    nomeRotina = $@"5.1 - Processo CSV";
+    try {
+        try { ExecuteCode.SetCurrentObject("Try/Catch", "Try/Catch"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Varrer Dados CSV - FAP", "varrerDadosCsv"); } catch { }
+        count = 1;
+        foreach(string forEachCsv241 in File.ReadLines(@$"C:\Users\joaov\OneDrive\Área de Trabalho\ROBOTEASY\FAP\Excel\FAP.csv")){
+            varrerDadosCsv = forEachCsv241.Split(';');
+            if(count != 1) {
+            try { ExecuteCode.SetCurrentObject("Inserir Linha - Resultados FAP", "criarGridResultadoFap"); } catch { }
+            criarGridResultadoFap.Label = "Inserir Linha - Resultados FAP";
+            criarGridResultadoFap.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{varrerDadosCsv[0]}",$"{varrerDadosCsv[1]}" });
+            try { ExecuteCode.SetCurrentObject("Inserir Linha - Resultados FAP", "criarGridResultadoFap"); } catch { }
+            criarGridResultadoFap.Label = "Inserir Linha - Resultados FAP";
+            criarGridResultadoFap.GridPutValues($"{Guid.NewGuid().ToString()}", new string[] { $"{varrerDadosCsv[0]}",$"{varrerDadosCsv[1]}" });
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "codigoRetorno"); } catch { }
+            codigoRetorno = $@"RPA001";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "mensagemRetorno"); } catch { }
+            mensagemRetorno = $@"Informações inseridas no Grid";
+            try { ExecuteCode.SetCurrentObject("Confirmar Sucesso na Rotina", "statusRetorno"); } catch { }
+            statusRetorno = $@"#(true)";
+            try { ExecuteCode.SetCurrentObject("Retorno", ""); } catch { }
+            return ;
+            }
+            count = count + 1;
+        }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Não foi possível inserir linhas no Grid";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+    catch (Exception ex) {
+        try { ExecuteCode.SetCurrentObject("Catch", "ex"); } catch { }
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "codigoRetorno"); } catch { }
+        codigoRetorno = $@"RPA002";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "mensagemRetorno"); } catch { }
+        mensagemRetorno = $@"Erro na rotina: {ex.Message}";
+        try { ExecuteCode.SetCurrentObject("Confirmar Erro na Rotina", "statusRetorno"); } catch { }
+        statusRetorno = $@"#(false)";
+    }
+}
+
